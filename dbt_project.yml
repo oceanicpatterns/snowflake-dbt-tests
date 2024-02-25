@@ -1,0 +1,10 @@
+name: snowflake-dbt-tests
+snowflake:
+  user: "{{ env_var('SNOWFLAKE_USER') }}"  # Replace with environment variable name
+  password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"  # Replace with environment variable name
+  account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"  # Replace with environment variable name
+  warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE') }}"  # Replace with environment variable name
+  database: "{{ env_var('SNOWFLAKE_DATABASE') }}"  # Replace with environment variable name
+  schema: "{{ env_var('SNOWFLAKE_SCHEMA') }}"  # Replace with environment variable name
+models: models
+tests: tests
