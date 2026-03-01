@@ -20,7 +20,7 @@
       --ok: #5fe4a3;
       --warn: #ffb16a;
       --err: #ff7b8c;
-      --shadow: 0 20px 50px rgba(2, 7, 16, 0.55);
+      --shadow: 0 12px 28px rgba(2, 7, 16, 0.38);
       --radius: 18px;
     }
 
@@ -48,11 +48,11 @@
     .orb {
       position: fixed;
       border-radius: 999px;
-      filter: blur(60px);
-      opacity: 0.4;
+      filter: blur(26px);
+      opacity: 0.28;
       pointer-events: none;
       z-index: 0;
-      animation: drift 18s ease-in-out infinite alternate;
+      animation: drift 30s ease-in-out infinite alternate;
     }
 
     .orb.a {
@@ -94,22 +94,10 @@
       border: 1px solid var(--line);
       border-radius: calc(var(--radius) + 6px);
       background: linear-gradient(140deg, rgba(9, 20, 36, 0.84), rgba(9, 28, 48, 0.72));
-      backdrop-filter: blur(12px);
       box-shadow: var(--shadow);
       overflow: hidden;
       padding: 24px 24px 18px;
       animation: rise 0.8s ease both;
-    }
-
-    .hero::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background:
-        linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.05) 45%, transparent 100%);
-      transform: translateX(-100%);
-      animation: sheen 4.8s linear infinite;
-      pointer-events: none;
     }
 
     .badge {
@@ -179,7 +167,6 @@
       border-radius: var(--radius);
       background: var(--panel);
       box-shadow: var(--shadow);
-      backdrop-filter: blur(11px);
       padding: 14px;
       animation: rise 0.65s ease both;
     }
@@ -328,8 +315,7 @@
       inset: auto -10% -50% -10%;
       height: 80%;
       border-radius: 50%;
-      filter: blur(12px);
-      opacity: 0.28;
+      opacity: 0.18;
       transition: background 0.2s ease;
       background: rgba(95, 228, 163, 0.4);
     }
@@ -470,15 +456,6 @@
       }
     }
 
-    @keyframes sheen {
-      0% {
-        transform: translateX(-140%);
-      }
-      100% {
-        transform: translateX(140%);
-      }
-    }
-
     @media (max-width: 1024px) {
       .hero-meta {
         grid-template-columns: 1fr;
@@ -490,6 +467,10 @@
     }
 
     @media (max-width: 860px) {
+      .orb {
+        display: none;
+      }
+
       .kpis {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
@@ -660,6 +641,9 @@
     const ringScore = document.getElementById("ringScore");
     const terminal = document.getElementById("terminal");
     const chart = document.getElementById("salesChart");
+    const numberFormatter = new Intl.NumberFormat("en-US");
+    let rafToken = 0;
+    let resizeTimer = 0;
 
     const stages = {
       seed: document.getElementById("sSeed"),
@@ -677,7 +661,18 @@
     }
 
     function fmtInt(n) {
-      return new Intl.NumberFormat("en-US").format(n);
+      return numberFormatter.format(n);
+    }
+
+    function syncCanvasSize() {
+      const rect = chart.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const width = Math.max(320, Math.floor(rect.width * dpr));
+      const height = Math.max(220, Math.floor(rect.height * dpr));
+      if (chart.width !== width || chart.height !== height) {
+        chart.width = width;
+        chart.height = height;
+      }
     }
 
     function resetStages() {
@@ -709,6 +704,7 @@
 
     function drawChart(points, risk) {
       const ctx = chart.getContext("2d");
+      if (!ctx) return;
       const width = chart.width;
       const height = chart.height;
       const pad = { l: 22, r: 10, t: 8, b: 20 };
@@ -733,8 +729,8 @@
         else ctx.lineTo(x, y);
       });
       ctx.strokeStyle = risk > 0.30 ? "#ffb16a" : "#3ee0ca";
-      ctx.lineWidth = 2.4;
-      ctx.shadowBlur = 18;
+      ctx.lineWidth = 2.2;
+      ctx.shadowBlur = 6;
       ctx.shadowColor = risk > 0.30 ? "rgba(255, 177, 106, 0.4)" : "rgba(62, 224, 202, 0.5)";
       ctx.stroke();
       ctx.shadowBlur = 0;
@@ -747,22 +743,20 @@
     }
 
     function printTerminal(lines) {
-      terminal.textContent = "";
-      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if (reducedMotion) {
-        terminal.textContent = lines.join("\n");
-        return;
-      }
-      let i = 0;
-      const timer = setInterval(() => {
-        terminal.textContent += (i ? "\n" : "") + lines[i];
-        terminal.scrollTop = terminal.scrollHeight;
-        i += 1;
-        if (i >= lines.length) clearInterval(timer);
-      }, 44);
+      terminal.textContent = lines.join("\n");
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    function scheduleSimulation() {
+      if (rafToken) return;
+      rafToken = requestAnimationFrame(() => {
+        rafToken = 0;
+        runSimulation();
+      });
     }
 
     function runSimulation() {
+      syncCanvasSize();
       rowsVal.textContent = rowsEl.value;
       outVal.textContent = outEl.value;
       prodVal.textContent = prodEl.value;
@@ -846,17 +840,21 @@
       outEl.value = String(Math.floor(Math.random() * 35));
       prodEl.value = String(2 + Math.floor(Math.random() * 10));
       chaosEl.checked = Math.random() > 0.66;
-      runSimulation();
+      scheduleSimulation();
     }
 
     [rowsEl, outEl, prodEl, chaosEl].forEach((el) => {
-      el.addEventListener("input", runSimulation);
-      el.addEventListener("change", runSimulation);
+      el.addEventListener("input", scheduleSimulation);
+      el.addEventListener("change", scheduleSimulation);
     });
-    rerunBtn.addEventListener("click", runSimulation);
+    rerunBtn.addEventListener("click", scheduleSimulation);
     shuffleBtn.addEventListener("click", randomizeScenario);
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(scheduleSimulation, 120);
+    });
 
-    runSimulation();
+    scheduleSimulation();
   </script>
 </body>
 </html>
