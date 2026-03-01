@@ -21,3 +21,7 @@ profiles.yml
 .DS_Store
 Thumbs.db
 .vscode/
+
+# Node / frontend
+node_modules/
+npm-debug.log*

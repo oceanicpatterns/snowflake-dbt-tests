@@ -26,24 +26,27 @@ This repository shows a clean analytics workflow where you can:
 
 ## Playground Demo
 
-Visitor playground (supercharged static demo):
+Visitor playground (React + Vite modern app):
 
 - Live URL (after Pages deployment): `https://oceanicpatterns.github.io/snowflake-dbt-tests/`
-- Direct live page: `https://oceanicpatterns.github.io/snowflake-dbt-tests/playground.html`
-- Local files: [`docs/index.html`](docs/index.html), [`docs/playground.html`](docs/playground.html)
+- Source entry: [`index.html`](index.html)
+- App source: [`playground/src/App.jsx`](playground/src/App.jsx), [`playground/src/styles.css`](playground/src/styles.css)
+- Built Pages output: [`docs/index.html`](docs/index.html)
 
-Run locally:
+Run locally with hot reload:
 
 ```bash
-open docs/playground.html
+npm install
+npm run dev
 ```
 
 What the playground offers:
 
-1. Interactive dbt-like pipeline simulation controls.
-2. Animated quality dashboard and trend chart.
-3. Terminal-style run output preview.
-4. Immediate feel for model/test workflow without setup.
+1. Scenario controls for ingestion volume, outlier pressure, product breadth, and seasonality.
+2. Revenue pulse visualization over a simulated 28-day period.
+3. Daily quality heatmap across `seed -> staging -> marts -> tests -> python QA`.
+4. Stage reliability cards and top-revenue day ranking table.
+5. Execution plan block that maps directly to real local dbt/pytest commands.
 
 ## Quick Start
 
@@ -62,6 +65,12 @@ dbt build --target local
 pytest -q
 ```
 
+Build playground for Pages:
+
+```bash
+npm run build
+```
+
 ## Project Navigation
 
 - dbt config: [`dbt_project.yml`](dbt_project.yml)
@@ -74,6 +83,9 @@ pytest -q
 - python module: [`src/snowflake_dbt_tests/sales.py`](src/snowflake_dbt_tests/sales.py)
 - script wrapper: [`scripts/calculate_daily_sales.py`](scripts/calculate_daily_sales.py)
 - python tests: [`tests/test_sales.py`](tests/test_sales.py)
+- playground app: [`playground/src/App.jsx`](playground/src/App.jsx)
+- playground styles: [`playground/src/styles.css`](playground/src/styles.css)
+- vite config: [`vite.config.js`](vite.config.js)
 - CI workflow: [`.github/workflows/ci.yml`](.github/workflows/ci.yml)
 - Pages workflow: [`.github/workflows/pages.yml`](.github/workflows/pages.yml)
 
@@ -142,6 +154,14 @@ snowflake-dbt-tests/
   .github/workflows/
     ci.yml
     pages.yml
+  index.html
+  playground/src/
+    App.jsx
+    main.jsx
+    styles.css
+  package.json
+  package-lock.json
+  vite.config.js
   dbt_project.yml
   profiles/profiles.yml
   models/
@@ -159,7 +179,7 @@ snowflake-dbt-tests/
     sales.py
   docs/
     index.html
-    playground.html
+    assets/
   requirements.txt
   pyproject.toml
 ```
