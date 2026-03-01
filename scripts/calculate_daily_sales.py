@@ -1,27 +1,22 @@
-import pandas as pd
+from __future__ import annotations
+
+from pathlib import Path
+import sys
+
+SRC_PATH = Path(__file__).resolve().parents[1] / "src"
+if str(SRC_PATH) not in sys.path:
+    sys.path.insert(0, str(SRC_PATH))
+
+from snowflake_dbt_tests import calculate_daily_sales, summarize_daily_sales
 
 
-def calculate_daily_sales(data_path):
-    """
-    Calculates daily sales from a CSV file.
+def main() -> None:
+    data_path = Path("tests/data/sample_sales.csv")
+    daily_sales = calculate_daily_sales(data_path)
+    summary = summarize_daily_sales(daily_sales)
+    print(daily_sales.to_string(index=False))
+    print(f"\nRows: {summary.rows}, Total Sales: {summary.total_sales:.2f}")
 
-    Args:
-        data_path (str): Path to the CSV file containing sales data.
 
-    Returns:
-        pandas.DataFrame: DataFrame with daily sales data.
-    """
-
-    df = pd.read_csv(data_path)
-
-    # Ensure 'date' is a datetime object
-    df['date'] = pd.to_datetime(df['date'])
-
-    daily_sales = df.groupby('date')['amount'].sum().reset_index()
-    return daily_sales
-
-# Example usage 
 if __name__ == "__main__":
-  data_path = "data/sales_data.csv"
-  daily_sales = calculate_daily_sales(data_path)
-  print(daily_sales.to_string())
+    main()

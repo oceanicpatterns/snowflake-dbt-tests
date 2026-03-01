@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "snowflake-dbt-tests"
+version = "1.0.0"
+description = "Production-minded local dbt + Python testing baseline with Snowflake-compatible profiles"
+requires-python = ">=3.10"
+readme = "README.md"
+dependencies = [
+  "pandas>=2.2,<3",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

@@ -1,51 +1,165 @@
-## dbt Core and Local Testing: A Guided Demo
+# snowflake-dbt-tests
 
-This guide delves into dbt Core, its functionalities, and the process of running tests locally without relying on a connected data warehouse environment (Snowflake).
+Production-minded baseline for local-first dbt testing (DuckDB), Snowflake-compatible deployment profiles, and Python data utility tests.
 
-### Introduction to dbt Core
+## Table of Contents
 
-**dbt Core** stands as the open-source foundation of the dbt ecosystem, empowering developers and data analysts to:
+- [Overview](#overview)
+- [Playground Demo](#playground-demo)
+- [Quick Start](#quick-start)
+- [Project Navigation](#project-navigation)
+- [dbt Workflow](#dbt-workflow)
+- [Python Workflow](#python-workflow)
+- [Configuration and Security](#configuration-and-security)
+- [Testing Strategy](#testing-strategy)
+- [CI Quality Gates](#ci-quality-gates)
+- [Project Structure](#project-structure)
 
-- **Seamlessly transform raw data** into business-ready models using an intuitive SQL-based syntax.
-- **Write unit tests** to guarantee data transformation accuracy and reliability.
-- **Generate comprehensive documentation** for enhanced understanding and collaboration.
-- **Embrace version control** for efficient change management and tracking.
-- **Integrate with CI/CD pipelines** for streamlined deployments.
+## Overview
 
-dbt Core boasts support for a broad spectrum of data warehouses, including Snowflake, Redshift, BigQuery, and more.
+This repository shows a clean analytics workflow where you can:
 
-### Advantages of Local Testing with dbt Core
+1. Build dbt models locally using DuckDB.
+2. Preserve Snowflake compatibility using environment-driven profiles.
+3. Validate model contracts using schema and data tests.
+4. Validate Python transforms using deterministic pytest tests.
 
-Local testing with dbt Core offers numerous benefits, including:
+## Playground Demo
 
-- **Faster Feedback:** Achieve quicker iterations and debugging by testing models without the overhead of connecting to a live data warehouse.
-- **Offline Testing:** Conduct testing even in the absence of a production environment, ideal for developers working on laptops or in disconnected setups.
-- **Increased Efficiency:** Integrate tests into your CI pipelines for streamlined deployments without incurring data warehouse usage costs.
+Visitor playground (supercharged static demo):
 
-### Steps for Local Testing with dbt Core
+- Live URL (after Pages deployment): `https://oceanicpatterns.github.io/snowflake-dbt-tests/`
+- Direct live page: `https://oceanicpatterns.github.io/snowflake-dbt-tests/playground.html`
+- Local files: [`docs/index.html`](docs/index.html), [`docs/playground.html`](docs/playground.html)
 
-**1. Set Up Your Development Environment:**
+Run locally:
 
-- Install Python (preferably within a virtual environment) and dbt. You can install dbt using `pip install dbt`.
+```bash
+open docs/playground.html
+```
 
-**2. Create a dbt Project:**
+What the playground offers:
 
-- Initialize a dbt project in your local directory using `dbt init`. This creates the essential project structure, including a `models` directory to house your data transformation logic.
+1. Interactive dbt-like pipeline simulation controls.
+2. Animated quality dashboard and trend chart.
+3. Terminal-style run output preview.
+4. Immediate feel for model/test workflow without setup.
 
-**3. Define Models and Tests:**
+## Quick Start
 
-- Create model files within the `models` directory using dbt's SQL-based syntax to define your data transformations.
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
 
-**4. Add Test Files (Optional):**
+Run local build/tests:
 
-- Create test files within the `tests` directory using a testing framework like `pytest` or `great_expectations` to write unit tests for your models.
+```bash
+export DBT_PROFILES_DIR=profiles
+dbt seed --target local
+dbt build --target local
+pytest -q
+```
 
-**5. Run Tests Locally:**
+## Project Navigation
 
-- Activate your virtual environment (if using one).
-- Navigate to your dbt project directory.
-- Run `dbt test` to execute your defined tests. This will test your models without requiring a live data warehouse connection.
+- dbt config: [`dbt_project.yml`](dbt_project.yml)
+- profiles: [`profiles/profiles.yml`](profiles/profiles.yml)
+- staging model: [`models/staging/stg_transactions.sql`](models/staging/stg_transactions.sql)
+- mart model: [`models/marts/daily_sales.sql`](models/marts/daily_sales.sql)
+- schema tests: [`models/schema.yml`](models/schema.yml)
+- custom data test: [`tests/daily_sales_non_negative.sql`](tests/daily_sales_non_negative.sql)
+- sample seed: [`seeds/sample_transactions.csv`](seeds/sample_transactions.csv)
+- python module: [`src/snowflake_dbt_tests/sales.py`](src/snowflake_dbt_tests/sales.py)
+- script wrapper: [`scripts/calculate_daily_sales.py`](scripts/calculate_daily_sales.py)
+- python tests: [`tests/test_sales.py`](tests/test_sales.py)
+- CI workflow: [`.github/workflows/ci.yml`](.github/workflows/ci.yml)
+- Pages workflow: [`.github/workflows/pages.yml`](.github/workflows/pages.yml)
 
-**Example: Local Testing with a Sample Model**
+## dbt Workflow
 
-The example of this repo showcases how to implement local testing for a basic model calculating daily sales
+### Local target (recommended)
+
+```bash
+export DBT_PROFILES_DIR=profiles
+dbt deps
+dbt seed --target local
+dbt run --target local
+dbt test --target local
+```
+
+### Snowflake target
+
+```bash
+export SNOWFLAKE_ACCOUNT="..."
+export SNOWFLAKE_USER="..."
+export SNOWFLAKE_PASSWORD="..."
+export SNOWFLAKE_ROLE="SYSADMIN"
+export SNOWFLAKE_WAREHOUSE="..."
+export SNOWFLAKE_DATABASE="..."
+export SNOWFLAKE_SCHEMA="..."
+```
+
+Then:
+
+```bash
+export DBT_PROFILES_DIR=profiles
+dbt build --target snowflake
+```
+
+## Python Workflow
+
+```bash
+python scripts/calculate_daily_sales.py
+```
+
+## Configuration and Security
+
+- Secrets are read from environment variables.
+- No credentials are committed in the repository.
+- CI includes `gitleaks` secret scanning.
+
+## Testing Strategy
+
+1. dbt schema tests validate nullability/uniqueness contracts.
+2. Custom data test enforces non-negative aggregate output.
+3. Python unit tests validate happy path and failure modes.
+
+## CI Quality Gates
+
+On push/PR (`main`):
+
+1. Secret scan (`gitleaks`)
+2. Python syntax check
+3. Python unit tests (`pytest`)
+4. dbt local seed/build/test with DuckDB
+
+## Project Structure
+
+```text
+snowflake-dbt-tests/
+  .github/workflows/
+    ci.yml
+    pages.yml
+  dbt_project.yml
+  profiles/profiles.yml
+  models/
+    staging/stg_transactions.sql
+    marts/daily_sales.sql
+    schema.yml
+  seeds/sample_transactions.csv
+  tests/
+    data/sample_sales.csv
+    daily_sales_non_negative.sql
+    test_sales.py
+  scripts/calculate_daily_sales.py
+  src/snowflake_dbt_tests/
+    __init__.py
+    sales.py
+  docs/
+    index.html
+    playground.html
+  requirements.txt
+  pyproject.toml
+```

@@ -1,0 +1,41 @@
+version: 2
+
+models:
+  - name: stg_transactions
+    description: Typed staging layer over sample transaction seed data.
+    columns:
+      - name: transaction_id
+        tests:
+          - not_null
+          - unique
+      - name: product_id
+        tests:
+          - not_null
+      - name: created_at
+        tests:
+          - not_null
+      - name: amount
+        tests:
+          - not_null
+
+  - name: daily_sales
+    description: Daily sales totals by product.
+    columns:
+      - name: product_id
+        tests:
+          - not_null
+      - name: sales_date
+        tests:
+          - not_null
+      - name: total_daily_sales
+        tests:
+          - not_null
+
+seeds:
+  - name: sample_transactions
+    description: Sample local dataset for deterministic dbt builds/tests.
+    columns:
+      - name: transaction_id
+        tests:
+          - not_null
+          - unique

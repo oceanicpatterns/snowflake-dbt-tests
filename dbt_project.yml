@@ -1,10 +1,29 @@
-name: snowflake-dbt-tests
-snowflake:
-  user: "{{ env_var('SNOWFLAKE_USER') }}"  # Replace with environment variable name
-  password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"  # Replace with environment variable name
-  account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"  # Replace with environment variable name
-  warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE') }}"  # Replace with environment variable name
-  database: "{{ env_var('SNOWFLAKE_DATABASE') }}"  # Replace with environment variable name
-  schema: "{{ env_var('SNOWFLAKE_SCHEMA') }}"  # Replace with environment variable name
-models: models
-tests: tests
+name: snowflake_dbt_tests
+version: 1.0.0
+config-version: 2
+
+profile: snowflake_dbt_tests
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+
+clean-targets:
+  - target
+  - dbt_packages
+
+models:
+  snowflake_dbt_tests:
+    +materialized: view
+    staging:
+      +schema: staging
+      +tags: ["staging"]
+    marts:
+      +schema: marts
+      +materialized: table
+      +tags: ["mart"]
+
+seeds:
+  snowflake_dbt_tests:
+    +schema: staging

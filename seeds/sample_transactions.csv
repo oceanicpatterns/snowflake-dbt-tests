@@ -1,0 +1,6 @@
+transaction_id,product_id,product_name,created_at,amount
+1,101,Widget A,2024-02-20 10:00:00,40
+2,101,Widget A,2024-02-20 16:00:00,60
+3,102,Widget B,2024-02-21 12:30:00,50
+4,101,Widget A,2024-02-22 09:00:00,70
+5,101,Widget A,2024-02-22 17:15:00,80

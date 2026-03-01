@@ -1,3 +1,23 @@
-.dbtenv/
-.dbtenv
-dbtenv
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+# dbt artifacts
+target/
+dbt_packages/
+logs/
+
+# Local profiles and env
+profiles.yml
+.env
+.env.*
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
